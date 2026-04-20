@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Persuasive Technology — University Examination</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #14171f;
+    --card: #1a1e28;
+    --border: #272c3a;
+    --accent: #e8b45a;
+    --accent2: #5a9be8;
+    --accent3: #5ae89b;
+    --danger: #e85a5a;
+    --text: #e8e6e0;
+    --muted: #7a7f8e;
+    --correct: #1a3a28;
+    --correct-border: #5ae89b;
+    --wrong: #3a1a1a;
+    --wrong-border: #e85a5a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-left h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+  }
+  .header-left p {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 2px;
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .header-right {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+  .stat {
+    text-align: center;
+  }
+  .stat-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .stat-label {
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .timer-val { color: var(--accent2); }
+  .score-val { color: var(--accent3); }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 40px;
+  }
+  .progress-track {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width 0.4s ease;
+  }
+
+  /* ── MAIN ── */
+  main {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* ── QUESTION CARD ── */
+  .q-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 36px;
+    margin-bottom: 24px;
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .q-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .q-number {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .q-badge {
+    font-size: 0.65rem;
+    font-family: 'IBM Plex Mono', monospace;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .badge-mcq    { background: rgba(232,180,90,0.12); color: var(--accent); border: 1px solid rgba(232,180,90,0.3); }
+  .badge-ms     { background: rgba(90,155,232,0.12); color: var(--accent2); border: 1px solid rgba(90,155,232,0.3); }
+  .badge-fill   { background: rgba(90,232,155,0.12); color: var(--accent3); border: 1px solid rgba(90,232,155,0.3); }
+
+  .q-text {
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 24px;
+    line-height: 1.65;
+  }
+
+  /* ── MCQ OPTIONS ── */
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 18px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface);
+  }
+  .option:hover:not(.disabled) {
+    border-color: var(--accent);
+    background: rgba(232,180,90,0.05);
+  }
+  .option.selected {
+    border-color: var(--accent2);
+    background: rgba(90,155,232,0.08);
+  }
+  .option.correct {
+    border-color: var(--correct-border);
+    background: var(--correct);
+  }
+  .option.wrong {
+    border-color: var(--wrong-border);
+    background: var(--wrong);
+  }
+  .option.disabled { cursor: default; }
+  .opt-key {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 22px;
+    padding-top: 1px;
+    color: var(--muted);
+  }
+  .option.correct .opt-key { color: var(--correct-border); }
+  .option.wrong   .opt-key { color: var(--wrong-border); }
+  .option.selected .opt-key { color: var(--accent2); }
+  .opt-text { font-size: 0.95rem; line-height: 1.5; }
+
+  /* ── MULTI-SELECT ── */
+  .ms-hint {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 14px;
+    font-style: italic;
+  }
+  .checkbox-opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 12px 18px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface);
+  }
+  .checkbox-opt:hover:not(.disabled) {
+    border-color: var(--accent2);
+  }
+  .checkbox-opt.checked {
+    border-color: var(--accent2);
+    background: rgba(90,155,232,0.08);
+  }
+  .checkbox-opt.correct { border-color: var(--correct-border); background: var(--correct); }
+  .checkbox-opt.wrong   { border-color: var(--wrong-border);   background: var(--wrong); }
+  .checkbox-opt.missed  { border-color: var(--accent3); background: rgba(90,232,155,0.05); }
+  .cb-box {
+    width: 18px; height: 18px;
+    border: 1.5px solid var(--muted);
+    border-radius: 4px;
+    margin-top: 2px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 11px;
+    color: var(--accent2);
+    transition: all 0.2s;
+  }
+  .checkbox-opt.checked .cb-box { border-color: var(--accent2); }
+
+  /* ── FILL IN THE BLANK ── */
+  .fill-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .fill-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.95rem;
+    width: 100%;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .fill-input:focus { border-color: var(--accent3); }
+  .fill-input.correct-fill { border-color: var(--correct-border); background: var(--correct); }
+  .fill-input.wrong-fill   { border-color: var(--wrong-border);   background: var(--wrong); }
+
+  /* ── FEEDBACK ── */
+  .feedback {
+    margin-top: 18px;
+    padding: 14px 18px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    display: none;
+  }
+  .feedback.show { display: block; }
+  .feedback.correct-fb { background: rgba(90,232,155,0.08); border: 1px solid rgba(90,232,155,0.25); color: var(--accent3); }
+  .feedback.wrong-fb   { background: rgba(232,90,90,0.08);  border: 1px solid rgba(232,90,90,0.25);  color: #e87a7a; }
+
+  /* ── BUTTONS ── */
+  .q-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 10px 24px;
+    border-radius: 7px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .btn-submit {
+    background: var(--accent);
+    color: #0d0f14;
+  }
+  .btn-submit:hover { background: #f0c06a; }
+  .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-next {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-next:hover { border-color: var(--accent2); color: var(--accent2); }
+  .btn-prev {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+  .btn-prev:hover { border-color: var(--muted); color: var(--text); }
+
+  /* ── SECTION DIVIDER ── */
+  .section-header {
+    margin: 40px 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .section-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    color: var(--accent);
+    font-style: italic;
+  }
+  .section-line { flex: 1; height: 1px; background: var(--border); }
+
+  /* ── RESULTS ── */
+  #results-screen {
+    display: none;
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .results-score {
+    font-family: 'Playfair Display', serif;
+    font-size: 5rem;
+    color: var(--accent);
+    margin: 20px 0 8px;
+  }
+  .results-grade {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.1rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 32px;
+  }
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 500px;
+    margin: 0 auto 40px;
+  }
+  .res-stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .res-stat-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--accent2);
+  }
+  .res-stat-label { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+  .btn-restart {
+    background: var(--accent);
+    color: #0d0f14;
+    padding: 14px 40px;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    border: none;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .btn-restart:hover { background: #f0c06a; transform: translateY(-1px); }
+
+  /* ── INTRO ── */
+  #intro-screen {
+    max-width: 680px;
+    margin: 60px auto;
+    text-align: center;
+  }
+  .intro-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .intro-subtitle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 32px;
+  }
+  .intro-info {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 36px;
+    text-align: left;
+    margin-bottom: 32px;
+  }
+  .intro-info h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 14px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .intro-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+  .intro-row:last-child { border-bottom: none; }
+  .intro-row span:first-child { color: var(--muted); }
+  .intro-row span:last-child { color: var(--text); font-weight: 500; }
+  .btn-start {
+    background: var(--accent);
+    color: #0d0f14;
+    padding: 16px 56px;
+    font-size: 1.05rem;
+    border-radius: 9px;
+    cursor: pointer;
+    border: none;
+    font-weight: 700;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .btn-start:hover { background: #f0c06a; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(232,180,90,0.25); }
+
+  /* ── NAV DOTS ── */
+  .nav-dots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 32px;
+    justify-content: center;
+  }
+  .nav-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-dot.answered { background: var(--muted); }
+  .nav-dot.correct-dot { background: var(--correct-border); }
+  .nav-dot.wrong-dot { background: var(--wrong-border); }
+  .nav-dot.current { transform: scale(1.5); background: var(--accent); }
+
+  @media (max-width: 600px) {
+    header { padding: 16px 20px; flex-wrap: wrap; gap: 12px; }
+    main { padding: 24px 12px 60px; }
+    .q-card { padding: 24px 18px; }
+    .results-grid { grid-template-columns: repeat(2, 1fr); }
+    .intro-title { font-size: 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div id="intro-screen">
+  <p class="intro-subtitle">University Final Examination · 2024</p>
+  <h1 class="intro-title">Persuasive<br><em style="color:var(--accent)">Technology</em></h1>
+  <p style="color:var(--muted);margin-bottom:32px;font-size:0.95rem;">Based on <em>Persuasive Technology: Using Computers to Change What We Think and Do</em> — B.J. Fogg (2003)</p>
+  <div class="intro-info">
+    <h3>Examination Details</h3>
+    <div class="intro-row"><span>Total Questions</span><span>70</span></div>
+    <div class="intro-row"><span>Question Types</span><span>MCQ · Multiple Select · Fill-in-the-Blank</span></div>
+    <div class="intro-row"><span>Practical Questions</span><span>~55 scenario-based</span></div>
+    <div class="intro-row"><span>Time Limit</span><span>90 minutes</span></div>
+    <div class="intro-row"><span>Passing Grade</span><span>70%</span></div>
+    <div class="intro-row"><span>Immediate Feedback</span><span>Yes — with explanations</span></div>
+  </div>
+  <button class="btn-start" onclick="startExam()">Begin Examination →</button>
+</div>
+
+<!-- EXAM -->
+<div id="exam-screen" style="display:none;">
+  <header>
+    <div class="header-left">
+      <h1>Persuasive Technology</h1>
+      <p>University Examination · B.J. Fogg</p>
+    </div>
+    <div class="header-right">
+      <div class="stat">
+        <div class="stat-val timer-val" id="timer-display">90:00</div>
+        <div class="stat-label">Time Left</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val score-val" id="score-display">0</div>
+        <div class="stat-label">Score</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" id="q-count-display">1/70</div>
+        <div class="stat-label">Question</div>
+      </div>
+    </div>
+  </header>
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:1.4%"></div></div>
+  </div>
+  <main>
+    <div class="nav-dots" id="nav-dots"></div>
+    <div id="question-container"></div>
+  </main>
+</div>
+
+<!-- RESULTS -->
+<div id="results-screen">
+  <main style="display:block;">
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;">Examination Complete</p>
+    <div class="results-score" id="final-pct">--</div>
+    <div class="results-grade" id="final-grade">--</div>
+    <div class="results-grid">
+      <div class="res-stat"><div class="res-stat-val" id="res-correct">-</div><div class="res-stat-label">Correct</div></div>
+      <div class="res-stat"><div class="res-stat-val" style="color:var(--danger)" id="res-wrong">-</div><div class="res-stat-label">Incorrect</div></div>
+      <div class="res-stat"><div class="res-stat-val" style="color:var(--accent)" id="res-skipped">-</div><div class="res-stat-label">Skipped</div></div>
+    </div>
+    <button class="btn-restart" onclick="restartExam()">Retake Examination</button>
+  </main>
+</div>
+
+<script>
+const QUESTIONS = [
+  // ── SECTION 1: CAPTOLOGY & DEFINITIONS ──
+  {
+    id:1, type:'mcq', section:'Section I: Captology Fundamentals',
+    q:"A company designs a mobile app whose sole purpose is to help users quit smoking by tracking cravings and sending motivational messages. According to Fogg, this app is BEST described as:",
+    opts:["A tool using computer-mediated communication","A macrosuasion product","A microsuasion product","An exogenous persuasive technology"],
+    ans:1, exp:"Macrosuasion describes products whose overall primary intent is persuasion — like quit-smoking apps. Microsuasion refers to persuasive elements embedded within a product whose main goal is something else."
+  },
+  {
+    id:2, type:'mcq', section:'Section I: Captology Fundamentals',
+    q:"An email program's main purpose is communication. However, it pops up a dialog box saying 'You've been typing for 2 hours — take a break!' This persuasive element is an example of:",
+    opts:["Macrosuasion","Endogenous persuasion","Microsuasion","Coercive technology"],
+    ans:2, exp:"Microsuasion refers to small persuasive elements embedded inside a product whose primary purpose is not persuasion. The email program's core goal is communication; the break reminder is a microsuasive element."
+  },
+  {
+    id:3, type:'mcq', section:'Section I: Captology Fundamentals',
+    q:"Maria buys a pedometer app because she believes it will motivate her to walk more. The pedometer was NOT designed for persuasion. In captology terms, this is:",
+    opts:["Macrosuasion from the user","Endogenous persuasive intent","Exogenous persuasive intent","Microsuasion"],
+    ans:2, exp:"Exogenous persuasive intent comes from outside the product's design — from the user or another source. Captology focuses only on endogenous (built-in) persuasive intent."
+  },
+  {
+    id:4, type:'mcq', section:'Section I: Captology Fundamentals',
+    q:"According to Fogg, what distinguishes persuasion from coercion?",
+    opts:["Persuasion uses technology; coercion uses humans","Persuasion implies voluntary change; coercion implies force","Persuasion changes attitudes; coercion changes behaviors","Persuasion is ethical; coercion is not"],
+    ans:1, exp:"Fogg explicitly distinguishes persuasion (voluntary change in attitudes or behaviors) from coercion (forced change). Both can change behavior, but persuasion involves no force."
+  },
+  {
+    id:5, type:'fill', section:'Section I: Captology Fundamentals',
+    q:"Captology is an acronym based on the phrase ______________________.",
+    ans:["computers as persuasive technologies"], exp:"Fogg coined 'captology' as an acronym for 'Computers As Persuasive Technologies.' It describes the overlap between computing technology and persuasion."
+  },
+  {
+    id:6, type:'mcq', section:'Section I: Captology Fundamentals',
+    q:"A software installation wizard that steers users through accepting terms, optional add-ons, and registration is persuading primarily at which level?",
+    opts:["Macrosuasion level","Microsuasion level","Coercion level","Surveillance level"],
+    ans:1, exp:"The wizard's persuasive elements (getting you to register, accept add-ons) are micro-level persuasion embedded in the larger task of installation — a classic microsuasion scenario."
+  },
+  {
+    id:7, type:'mcq', section:'Section I: Captology Fundamentals',
+    q:"Fogg defines captology as focusing on attitude or behavior change resulting from:",
+    opts:["Computer-mediated communication","Human-computer interaction","Social media influence","Traditional media campaigns"],
+    ans:1, exp:"Captology specifically focuses on HCI (human-computer interaction), NOT on computer-mediated communication (CMC), where the computer is merely a channel between people."
+  },
+  {
+    id:8, type:'ms', section:'Section I: Captology Fundamentals',
+    q:"Which of the following are advantages computers have over human persuaders? (Select ALL that apply)",
+    opts:["They are more persistent","They allow anonymity","They can always understand emotional context","They can scale easily","They go where humans cannot go","They always know the best opportune moment"],
+    ans:[0,1,3,4], exp:"Fogg lists 6 advantages: persistence, anonymity, data management, multiple modalities, scalability, and ubiquity. Computers do NOT inherently understand emotional context or always identify opportune moments — those are limitations."
+  },
+  {
+    id:9, type:'fill', section:'Section I: Captology Fundamentals',
+    q:"The study of computers as persuasive technologies was called captology — a term coined by ________ at Stanford University.",
+    ans:["b.j. fogg","bj fogg","fogg"], exp:"B.J. Fogg of the Stanford Persuasive Technology Lab coined the term 'captology.'"
+  },
+  {
+    id:10, type:'mcq', section:'Section I: Captology Fundamentals',
+    q:"A pop-up ad falsely reports 'Your computer is infected! Click here immediately!' This is NOT classified under captology because:",
+    opts:["Captology only covers mobile devices","It uses deception, not persuasion","Pop-up ads are not interactive","It was not designed by a credible company"],
+    ans:1, exp:"Fogg's definition of persuasion explicitly excludes deception. Captology covers attempts to change attitudes/behaviors WITHOUT coercion or deception."
+  },
+
+  // ── SECTION 2: FUNCTIONAL TRIAD ──
+  {
+    id:11, type:'mcq', section:'Section II: The Functional Triad',
+    q:"A fitness website lets users simulate different diet plans and see projected weight loss over 6 months. Which corner of the functional triad does this PRIMARILY represent?",
+    opts:["Computer as tool","Computer as medium (simulation)","Computer as social actor","Computer as coercive agent"],
+    ans:1, exp:"Providing simulated experiences (exploring cause-and-effect scenarios like diet outcomes) is the role of computers as media — specifically sensory/simulation media."
+  },
+  {
+    id:12, type:'mcq', section:'Section II: The Functional Triad',
+    q:"Amazon.com greets a returning user by name, recommends products, and celebrates each purchase. This primarily reflects the computer role of:",
+    opts:["Tool","Medium","Social actor","Surveillance device"],
+    ans:2, exp:"When computers apply social dynamics like greeting by name, celebrating actions, and using personalized language, they function as social actors — applying human social interaction principles."
+  },
+  {
+    id:13, type:'mcq', section:'Section II: The Functional Triad',
+    q:"A user wears a heart-rate monitor that tracks their resting heart rate during sleep to measure fitness progress. In this context, the wrist computer functions primarily as a:",
+    opts:["Social actor","Persuasive medium","Tool","Simulation environment"],
+    ans:2, exp:"When computers make activities easier, perform calculations, or track data to motivate users, they function as tools — the first corner of Fogg's functional triad."
+  },
+  {
+    id:14, type:'fill', section:'Section II: The Functional Triad',
+    q:"The functional triad identifies three roles computing technology can play: tool, ________, and social actor.",
+    ans:["media","medium"], exp:"The functional triad consists of computer as tool, computer as media/medium (symbolic and sensory), and computer as social actor."
+  },
+  {
+    id:15, type:'ms', section:'Section II: The Functional Triad',
+    q:"A health website designed to motivate fitness could leverage ALL three corners of the functional triad. Which features correspond to each role? (Select ALL valid examples)",
+    opts:["Step-by-step goal-setting wizard (Tool)","Simulating how diet changes affect weight over time (Medium)","A virtual health coach that praises your progress (Social Actor)","Sending email newsletters (Tool)","Letting users compete with friends on a leaderboard (Social Actor)"],
+    ans:[0,1,2,4], exp:"Tool = simplifying/calculating/guiding processes. Medium = simulation of cause-effect. Social actor = using social dynamics like praise, competition, and social roles."
+  },
+  {
+    id:16, type:'mcq', section:'Section II: The Functional Triad',
+    q:"In Fogg's study at Stanford, participants responded to computers with simple text dialog boxes 'as though they were a human being' — feeling better when praised, reciprocating favors. This demonstrates computers functioning as:",
+    opts:["Tools","Media","Social actors","Surveillance systems"],
+    ans:2, exp:"The Stanford studies showed that even simple dialog boxes — with no characters or voice — triggered social responses. People responded as if the computer were a living social entity."
+  },
+
+  // ── SECTION 3: COMPUTERS AS PERSUASIVE TOOLS ──
+  {
+    id:17, type:'mcq', section:'Section III: Computers as Persuasive Tools',
+    q:"Amazon's 'one-click' shopping feature removes the steps of re-entering shipping and payment details. This is the BEST example of:",
+    opts:["Tunneling technology","Reduction technology","Tailoring technology","Suggestion technology"],
+    ans:1, exp:"Reduction technology simplifies a complex behavior to fewer steps (ideally one), increasing the benefit/cost ratio and making the target behavior easier to perform."
+  },
+  {
+    id:18, type:'mcq', section:'Section III: Computers as Persuasive Tools',
+    q:"A retirement planning app walks users sequentially through: (1) assessing their finances, (2) setting goals, and (3) choosing investment options — with no ability to skip steps. This is BEST described as:",
+    opts:["Tailoring","Reduction","Tunneling","Conditioning"],
+    ans:2, exp:"Tunneling guides users through a predetermined sequence of steps. By committing to enter the 'tunnel,' users experience information and activities they may not have engaged with otherwise."
+  },
+  {
+    id:19, type:'mcq', section:'Section III: Computers as Persuasive Tools',
+    q:"The website scorecard.org lets users enter their zip code to see a personalized list of polluters near their home. A user changes their jogging route after discovering a company nearby emits toxic chemicals. This demonstrates:",
+    opts:["Suggestion technology","Tailoring technology","Surveillance technology","Tunneling technology"],
+    ans:1, exp:"Tailoring technologies provide information relevant to the individual to change attitudes/behaviors. scorecard.org tailors pollution data to each user's zip code — a classic example."
+  },
+  {
+    id:20, type:'mcq', section:'Section III: Computers as Persuasive Tools',
+    q:"The SMART (Speed Monitoring Awareness and Radar Trailer) displays your current driving speed alongside the posted limit when you approach it. Its persuasive strategy is BEST described as:",
+    opts:["Tunneling — guiding drivers through a process","Surveillance — monitoring and reporting","Suggestion at an opportune moment","Reduction — simplifying the act of driving safely"],
+    ans:2, exp:"SMART uses suggestion technology — it creates a decision point at the precise opportune moment (when you're actually speeding) to cue re-evaluation of your behavior."
+  },
+  {
+    id:21, type:'fill', section:'Section III: Computers as Persuasive Tools',
+    q:"The ancient Greek concept of ________ refers to finding the opportune moment to present a message, which underlies suggestion technology.",
+    ans:["kairos"], exp:"Fogg traces suggestion technology to the classical Greek principle of kairos — finding the right moment for persuasion. Psychologists confirm people are more open to persuasion when in good moods or at decision points."
+  },
+  {
+    id:22, type:'mcq', section:'Section III: Computers as Persuasive Tools',
+    q:"An app notices you've been sedentary for 45 minutes and displays: 'Good time for a 5-minute walk!' This uses which persuasive tool type?",
+    opts:["Reduction","Self-monitoring","Suggestion","Conditioning"],
+    ans:2, exp:"Suggestion technology intervenes at the opportune moment — in this case, precisely when the user has been sedentary and is in an appropriate state to act on the suggestion."
+  },
+  {
+    id:23, type:'mcq', section:'Section III: Computers as Persuasive Tools',
+    q:"A dieting app tracks everything you eat, calculates daily calorie intake, and shows you charts of your weekly patterns. Users find themselves eating more mindfully as a result. This technology type is:",
+    opts:["Tailoring","Self-monitoring","Tunneling","Suggestion"],
+    ans:1, exp:"Self-monitoring technologies allow people to track their own behavior. Tracking and displaying personal data (like eating habits) can motivate behavior change through feedback and awareness."
+  },
+  {
+    id:24, type:'mcq', section:'Section III: Computers as Persuasive Tools',
+    q:"A software company installs monitoring software on employees' computers to track website usage and sends weekly reports to managers, which changes employee browsing habits. This is primarily:",
+    opts:["Tailoring","Self-monitoring","Surveillance","Tunneling"],
+    ans:2, exp:"Surveillance technology monitors people's behavior (often without their full control over when) and uses the monitored data to influence behavior. Unlike self-monitoring, the subject does not control the data."
+  },
+  {
+    id:25, type:'ms', section:'Section III: Computers as Persuasive Tools',
+    q:"Fogg identifies seven types of persuasive technology tools. Select ALL that are among those seven:",
+    opts:["Reduction","Tunneling","Tailoring","Suggestion","Self-monitoring","Empathizing","Surveillance","Conditioning"],
+    ans:[0,1,2,3,4,6,7], exp:"Fogg's seven types are: Reduction, Tunneling, Tailoring, Suggestion, Self-monitoring, Surveillance, and Conditioning. 'Empathizing' is not in Fogg's original taxonomy."
+  },
+  {
+    id:26, type:'mcq', section:'Section III: Computers as Persuasive Tools',
+    q:"A fitness game gives users virtual medals each time they complete a workout. Over time, users begin working out more frequently to earn more medals. This is an example of:",
+    opts:["Tunneling","Suggestion","Conditioning","Tailoring"],
+    ans:2, exp:"Conditioning uses rewards (and sometimes punishments) to reinforce target behaviors. Virtual medals are operant conditioning — positive reinforcement linked to the desired behavior (exercise)."
+  },
+  {
+    id:27, type:'mcq', section:'Section III: Computers as Persuasive Tools',
+    q:"Research shows tailored health information is more effective than generic information. Even MORE surprising, according to Fogg, is that:",
+    opts:["Tailoring only works for health topics","Generic information is more persuasive online","The mere perception of being tailored also increases persuasion","Tailoring reduces trust over time"],
+    ans:2, exp:"Research suggests that even the mere perception that information has been tailored for you (even if it hasn't) increases attention and persuasion — a finding with significant ethical implications."
+  },
+  {
+    id:28, type:'fill', section:'Section III: Computers as Persuasive Tools',
+    q:"According to reduction technology theory, making a behavior easier to perform increases the ________/cost ratio of the behavior.",
+    ans:["benefit","benefit/cost","benefit cost"], exp:"Reduction technologies increase the benefit/cost ratio — by reducing the cost (effort/complexity) of a behavior, people are more motivated to engage in it."
+  },
+
+  // ── SECTION 4: COMPUTERS AS MEDIA (SIMULATION) ──
+  {
+    id:29, type:'mcq', section:'Section IV: Computers as Persuasive Media',
+    q:"A video game called HIV Roulette simulates risky sexual scenarios and shows consequences. A separate product, Baby Think It Over, simulates infant care for teenagers. Both products' PRIMARY persuasive role is:",
+    opts:["As tools that reduce complexity","As social actors using peer pressure","As media providing simulation experiences","As surveillance systems monitoring behavior"],
+    ans:2, exp:"Both products use computer simulation to provide experiences that change attitudes/behaviors — the role of computers as persuasive media. HIV Roulette uses cause-effect simulation; Baby Think It Over uses object simulation."
+  },
+  {
+    id:30, type:'mcq', section:'Section IV: Computers as Persuasive Media',
+    q:"Kids who played the Bronkie the Bronchiasaurus asthma video game for 30 minutes reported increased self-efficacy in managing asthma. Kids who watched a videotape on the same topic reported decreased self-efficacy. This suggests:",
+    opts:["Video games are always better than videos","Interactive experiences boost self-efficacy more than passive experiences","Asthma education is only effective in game format","The game was simply more entertaining"],
+    ans:1, exp:"The study showed that interactive experiences (allowing rehearsal of behavior) boost self-efficacy, while passive experiences like videotapes can actually decrease self-efficacy. The key is interactivity and the ability to practice behaviors."
+  },
+  {
+    id:31, type:'mcq', section:'Section IV: Computers as Persuasive Media',
+    q:"In research on the Tectrix VR Bike, users who exercised with the virtual reality environment had higher heart rates and burned more calories than those without VR — yet reported no greater perceived exertion. This shows:",
+    opts:["VR bikes make exercise feel harder","Virtual environments can increase physical performance while reducing perceived effort","Users were deceived about their workout","VR only works for younger users"],
+    ans:1, exp:"The VR environment increased objective performance (calories burned, heart rate) while the simulated context reduced subjective perception of effort. The virtual environment effectively 'dissociated' users from discomfort."
+  },
+  {
+    id:32, type:'mcq', section:'Section IV: Computers as Persuasive Media',
+    q:"'Miss Muffett,' who had severe arachnophobia, underwent virtual reality therapy using the 'Spider World' system. Afterward, she decided to go camping in the woods. This example demonstrates that:",
+    opts:["VR therapy works only for rare phobias","Attitude changes in virtual environments can transfer to real-world behavior","VR therapy is inferior to traditional therapy","People need many years of VR therapy to overcome phobias"],
+    ans:1, exp:"The VR therapy changed Miss Muffett's attitude toward spiders in the virtual world, and this change transferred to real-world behavior. This supports the persuasive power of simulation-based attitude change."
+  },
+  {
+    id:33, type:'mcq', section:'Section IV: Computers as Persuasive Media',
+    q:"The 'In My Steps' VR system puts doctors in a simulation of a cancer patient's home, limiting their movement speed to replicate chemotherapy fatigue. About 60% of doctors reported they would change how they treat cancer-related fatigue. This is an example of using simulation to:",
+    opts:["Train procedural medical skills","Reduce complexity of diagnosis","Build empathy through perspective-taking","Condition doctors to follow protocols"],
+    ans:2, exp:"In My Steps uses simulation to build empathy by allowing doctors to experience firsthand what patients feel. The resulting attitude change (empathy) leads to behavioral change in treatment."
+  },
+  {
+    id:34, type:'fill', section:'Section IV: Computers as Persuasive Media',
+    q:"Baby Think It Over is classified as an ________ simulation because it goes with users into real-world settings, rather than creating a fully virtual environment.",
+    ans:["object","object simulation"], exp:"Fogg distinguishes between environment simulations (virtual worlds users enter mentally) and object simulations (devices used in real-life contexts). Baby Think It Over is an object simulator — a doll used in everyday life."
+  },
+  {
+    id:35, type:'mcq', section:'Section IV: Computers as Persuasive Media',
+    q:"One study of over 2,000 students who participated in the Neon Drunk Driving Simulator program showed:",
+    opts:["Students became more interested in how cars work","The technology had a significant impact on teens' attitudes toward drunk driving","Students who failed the simulation were more likely to drink and drive","The simulator had no measurable effect on driving behavior"],
+    ans:1, exp:"Research on the Drunk Driving Simulator showed significant impact on teens' attitudes toward getting in a car with a drunk driver — demonstrating that object simulation in real contexts changes attitudes effectively."
+  },
+  {
+    id:36, type:'ms', section:'Section IV: Computers as Persuasive Media',
+    q:"Compared to environment simulations, object simulations have key advantages. Select ALL the advantages Fogg identifies for object simulations:",
+    opts:["They fit into the context of a person's everyday life","They are less dependent on imagination or suspension of disbelief","They are cheaper to produce","They make clear the likely impact of certain attitudes or behaviors","They are better for teaching abstract concepts to children"],
+    ans:[0,1,3,4], exp:"Fogg lists three advantages of object simulations: (1) fit into everyday life, (2) less dependent on imagination, (3) make clear the real-life impact. They are especially effective for abstract concepts (parental responsibility) and hard-to-influence groups (teenagers)."
+  },
+
+  // ── SECTION 5: COMPUTERS AS SOCIAL ACTORS ──
+  {
+    id:37, type:'mcq', section:'Section V: Computers as Social Actors',
+    q:"In Fogg's Stanford personality study, participants worked with computers that had either 'dominant' or 'submissive' personalities. The key finding was:",
+    opts:["Dominant computers were always more persuasive","Submissive computers were preferred by everyone","People preferred computers whose personalities matched their own","Engineers showed no social responses to computers"],
+    ans:2, exp:"The study found that people preferred computers similar to themselves in personality style. Dominant participants preferred dominant computers; submissive participants preferred submissive computers — demonstrating the similarity principle."
+  },
+  {
+    id:38, type:'mcq', section:'Section V: Computers as Social Actors',
+    q:"In the affiliation study, participants who worked with computers labeled as their 'teammate' (shown by matching wristband color) reported the computer to be smarter, more credible, and more likable. The interaction content was identical. This shows:",
+    opts:["Computer aesthetics determine perceived intelligence","Labeling alone (shared group identity) affects perceived credibility","Engineers are not susceptible to social cues","Color alone determines social responses"],
+    ans:1, exp:"The affiliation study showed that merely labeling a computer as a 'teammate' — with no change in actual content — made it seem smarter, friendlier, and more credible. Perceived shared identity powerfully shapes persuasion."
+  },
+  {
+    id:39, type:'ms', section:'Section V: Computers as Social Actors',
+    q:"Fogg identifies five types of social cues that cause people to infer social presence in computers. Select ALL five:",
+    opts:["Physical cues (face, eyes, movement)","Psychological cues (preferences, humor, empathy)","Language cues (spoken/written language)","Social dynamics (turn-taking, praise, reciprocity)","Social roles (doctor, teacher, teammate)","Economic cues (pricing, discounts)"],
+    ans:[0,1,2,3,4], exp:"The five types of social cues are: (1) Physical, (2) Psychological, (3) Language, (4) Social Dynamics, and (5) Social Roles. Economic cues are not listed by Fogg as a social cue category."
+  },
+  {
+    id:40, type:'mcq', section:'Section V: Computers as Social Actors',
+    q:"Nintendo's Pocket Pikachu was a digital pet that required physical activity from its owner (registered by pedometer) for the pet to thrive. This is BEST classified as a computer functioning as:",
+    opts:["A persuasive tool using surveillance","A persuasive social actor using a social role","A medium providing simulation","A reduction technology"],
+    ans:1, exp:"The Pocket Pikachu is a persuasive social actor. It takes on a social role (virtual pet requiring care) that motivates physical activity. Users respond to it socially — caring for it as though it were alive."
+  },
+  {
+    id:41, type:'mcq', section:'Section V: Computers as Social Actors',
+    q:"In Fogg's praise research at Stanford, participants received computer praise that was either sincere or insincere (flattery). Results showed:",
+    opts:["Only sincere praise changed attitudes and behaviors","Only insincere praise was effective because users worked harder","Both sincere and insincere praise had nearly identical positive effects","Praise from computers had no effect on experienced computer users"],
+    ans:2, exp:"The key finding: participants responded to sincere praise and flattery from computers almost identically and both produced positive outcomes vs. no evaluation. Even insincere computer praise works. The exception: questions specifically about the sincerity of the computer."
+  },
+  {
+    id:42, type:'fill', section:'Section V: Computers as Social Actors',
+    q:"In the oscilloscope study at Oscillotech, when Fogg replaced harsh error messages with friendly, helpful messages, users reported the new scope to be more accurate, knowledgeable, and gave better information — even though the only change was the ________.",
+    ans:["personality","message personality","personality of the message"], exp:"The only difference was the personality conveyed by the text messages. This demonstrates that psychological cues (like friendly vs. harsh language) shape how users evaluate a technology's competence and credibility."
+  },
+  {
+    id:43, type:'mcq', section:'Section V: Computers as Social Actors',
+    q:"Research at Boston University tested cooperation with an onscreen character in a social dilemma game. In 1996 (unattractive character), cooperation was 32%. In the second study (more attractive character), cooperation was 92%. The researchers concluded:",
+    opts:["Users preferred more intelligent characters","Only attractive characters can convey social presence","The mere appearance of a computer character is sufficient to change social influence","Cooperation rates are always low in social dilemma games"],
+    ans:2, exp:"The Boston University studies showed that appearance alone — specifically attractiveness — dramatically changed social influence rates. This supports the Principle of Attractiveness: more attractive technology is likely more persuasive."
+  },
+  {
+    id:44, type:'mcq', section:'Section V: Computers as Social Actors',
+    q:"Eudora's registration dialog box uses humor, offers a 'giant statue' reward, and only allows users to click 'Take me to registration' or 'Maybe later' — not 'No.' Why is 'Maybe later' strategically powerful?",
+    opts:["It distracts users from the software's poor quality","It captures user data immediately","It creates an implicit commitment, increasing the likelihood of future registration","It is less intimidating than asking directly"],
+    ans:2, exp:"By clicking 'Maybe later,' users make an implicit commitment that they may register later. People value consistency and tend to follow through on commitments — a key social dynamic that Eudora exploits."
+  },
+  {
+    id:45, type:'mcq', section:'Section V: Computers as Social Actors',
+    q:"Ripple Effects' 'Relate for Teens' CD-ROM uses teen voices for all instructions, graffiti-style art, and photos of similar teens. This is designed to leverage which persuasion principle?",
+    opts:["Praise","Reciprocity","Similarity","Conditioning"],
+    ans:2, exp:"The Similarity Principle states that people are more readily persuaded by products similar to themselves. 'Relate for Teens' deliberately mirrors the target audience's language, style, and social context to maximize persuasive impact."
+  },
+
+  // ── SECTION 6: CREDIBILITY ──
+  {
+    id:46, type:'mcq', section:'Section VI: Credibility & Computers',
+    q:"A user trusts WebMD because it has been accurate for years. This type of credibility is:",
+    opts:["Presumed credibility","Reputed credibility","Surface credibility","Earned credibility"],
+    ans:3, exp:"Earned credibility is based on first-hand experience over time. After consistently accurate interactions with a source, users develop earned credibility — the most robust and most persuasion-relevant type."
+  },
+  {
+    id:47, type:'mcq', section:'Section VI: Credibility & Computers',
+    q:"A user clicks on a health website because it was shared by a trusted friend. Before reading any content, this user's credibility judgment is primarily based on:",
+    opts:["Earned credibility","Surface credibility","Reputed credibility","Presumed credibility"],
+    ans:2, exp:"Reputed credibility is based on third-party endorsement, reports, or referrals. A friend's recommendation is a classic word-of-mouth referral — a form of reputed credibility."
+  },
+  {
+    id:48, type:'fill', section:'Section VI: Credibility & Computers',
+    q:"Fogg identifies two key dimensions of credibility: ________ and expertise.",
+    ans:["trustworthiness", "trustworthiness and expertise"], exp:"Credibility is built on two dimensions: trustworthiness (being perceived as honest, unbiased, fair) and expertise (being perceived as knowledgeable, competent, accurate)."
+  },
+  {
+    id:49, type:'mcq', section:'Section VI: Credibility & Computers',
+    q:"A user visits a website and, based only on its professional design and modern layout, concludes it is likely credible. This is:",
+    opts:["Earned credibility","Presumed credibility","Surface credibility","Reputed credibility"],
+    ans:2, exp:"Surface credibility is based on simple inspection and first impressions — like visual design quality. It requires no prior experience or external referral."
+  },
+  {
+    id:50, type:'mcq', section:'Section VI: Credibility & Computers',
+    q:"According to Stanford Web Credibility studies, which element MOST DECREASED a website's perceived credibility?",
+    opts:["Having too many pages","Making it hard to distinguish ads from content","Using too many fonts","Lacking a mobile version"],
+    ans:1, exp:"Stanford studies showed the single biggest credibility reducer was making it hard to distinguish ads from content (−2.1 in 1999). This makes users feel deceived and view the entire site as biased."
+  },
+  {
+    id:51, type:'mcq', section:'Section VI: Credibility & Computers',
+    q:"A health website prominently features 'Featuring Harvard Medical School's Consumer Health Information' with the Harvard crest on every page. This is a deliberate strategy to boost which type of credibility?",
+    opts:["Earned credibility","Surface credibility","Reputed credibility","Presumed credibility"],
+    ans:1, exp:"By making the Harvard affiliation immediately visible on every page, InteliHealth brings a reputable endorsement to the surface — boosting surface credibility through first impressions. This is a strategic design choice."
+  },
+  {
+    id:52, type:'ms', section:'Section VI: Credibility & Computers',
+    q:"According to Stanford Web Credibility studies, which elements INCREASE website trustworthiness? (Select ALL that apply)",
+    opts:["Listing the organization's physical address","Making it hard to distinguish ads from content","Having articles with citations and references","Linking to competitors' sites","Using pop-up advertisements","Giving a contact phone number"],
+    ans:[0,2,3,5], exp:"Elements that increase trustworthiness: physical address, citations/references, links to competitors' sites (shows confidence and honesty), and phone number. Pop-up ads and confusing ads/content DECREASE credibility."
+  },
+  {
+    id:53, type:'mcq', section:'Section VI: Credibility & Computers',
+    q:"A website for 'Ocean Kayak Rentals Inc.' uses the URL 'PaddleAwayNow.com.' According to Fogg's research, this will likely:",
+    opts:["Increase presumed credibility by seeming established","Decrease credibility because the domain name doesn't match the company name","Have no effect on credibility","Increase surface credibility through memorability"],
+    ans:1, exp:"Stanford research showed that a domain name not matching the company name decreases credibility. Users become suspicious: Has the company been acquired? Is it going out of business? Hidden identities make people wary."
+  },
+  {
+    id:54, type:'mcq', section:'Section VI: Credibility & Computers',
+    q:"Fogg describes 'earned credibility' as the gold standard. Why is it MOST relevant to persuasive technology?",
+    opts:["It requires no user effort to develop","It is the easiest type to build","Users with high earned credibility in a site are most open to the site's persuasion techniques","It is based only on visual design"],
+    ans:2, exp:"Earned credibility is the most robust type and is most likely to lead to attitude and behavior changes. Users who have earned credibility in a site spend more time there, visit more often, and are more open to persuasion."
+  },
+  {
+    id:55, type:'mcq', section:'Section VI: Credibility & Computers',
+    q:"The Stanford Web Credibility studies found that pop-up ads hurt credibility SIGNIFICANTLY MORE in 2002 than in 1999. The most likely explanation is:",
+    opts:["Pop-ups were less common in 2002","Internet users were generally less trusting in 2002","Pop-ups became more common, increasing annoyance and signaling the site prioritizes ads over users","Websites improved their designs in this period"],
+    ans:2, exp:"As pop-up ads became more prevalent, users became more annoyed. Pop-ups signal the site operator is unconcerned about users' goals — a clear credibility-damaging message."
+  },
+
+  // ── SECTION 7: ETHICS ──
+  {
+    id:56, type:'mcq', section:'Section VII: Ethics of Persuasive Technology',
+    q:"A tunneling technology requires users to provide personal information before completing software installation, with no obvious 'skip' option. Fogg suggests this may border on:",
+    opts:["Macrosuasion","Legitimate microsuasion","Coercion","Surface credibility building"],
+    ans:2, exp:"When tunneling technologies trap users in a corner — provide information or risk faulty installation — they may become coercive. Fogg notes designers must ensure users can exit the tunnel at any time without damage to avoid coercion."
+  },
+  {
+    id:57, type:'mcq', section:'Section VII: Ethics of Persuasive Technology',
+    q:"A company designs a McDonald's toy bear that sings about French fries whenever near a McDonald's (using GPS). A key ethical concern Fogg raises is:",
+    opts:["The cost of GPS technology","The bear's impact on adult purchasing decisions","The manipulation of children, who are a vulnerable audience","The environmental impact of toys"],
+    ans:2, exp:"Fogg explicitly flags the ethical concern of using technology to manipulate children — a vulnerable group who may not understand persuasive intent. This example illustrates the ethical complexity of suggestion technology."
+  },
+  {
+    id:58, type:'mcq', section:'Section VII: Ethics of Persuasive Technology',
+    q:"Online games that encourage children to give up personal information would be considered problematic because:",
+    opts:["They are too expensive to develop","They use captology for commercial gain only","They use persuasive technology unethically by targeting a vulnerable group","They are not interactive enough"],
+    ans:2, exp:"Fogg acknowledges that persuasive technology CAN be used unethically — and online games persuading children to give up personal information is his own example of this. Ethics requires considering the vulnerability of the target audience."
+  },
+  {
+    id:59, type:'ms', section:'Section VII: Ethics of Persuasive Technology',
+    q:"According to Fogg, which design practices could make a tunneling technology ETHICAL? (Select ALL that apply)",
+    opts:["Making it impossible to exit the tunnel","Making clear how users can exit at any time without damage","Requiring personal data collection","Making the tunnel's assumptions and values transparent to users","Using tunneling only for health or social good purposes"],
+    ans:[1,3], exp:"For ethical tunneling: (1) users must be able to exit without harm at any time, and (2) the assumptions/values embedded in the tunnel should be transparent. Tunneling CAN be ethical for any purpose if designed responsibly."
+  },
+  {
+    id:60, type:'fill', section:'Section VII: Ethics of Persuasive Technology',
+    q:"Fogg notes an ethical concern with tailoring technology: the mere ________ of information being tailored increases persuasion, enabling deceptive 'personalization' that serves the designer's interests rather than the user's.",
+    ans:["perception","perception of being tailored","appearance"], exp:"Research shows that information doesn't need to actually be personalized — if users merely PERCEIVE it as tailored, they pay more attention and are more persuaded. This creates potential for unethical applications."
+  },
+
+  // ── SECTION 8: APPLIED/SCENARIO QUESTIONS ──
+  {
+    id:61, type:'mcq', section:'Section VIII: Applied Scenarios',
+    q:"You are designing a website to help people donate blood more often. Using the functional triad, which combination of roles would be MOST comprehensive?",
+    opts:["Tool only — simplify the sign-up process","Tool (sign-up simplification) + Medium (simulation of impact) + Social Actor (showing community donors)","Medium only — show a video about blood donation","Social Actor only — use testimonials from doctors"],
+    ans:1, exp:"A comprehensive persuasive design leverages all three corners: Tool (reducing barriers like simplifying sign-up), Medium (simulating the impact of your donation on patients), and Social Actor (creating social dynamics through community/peers who donate)."
+  },
+  {
+    id:62, type:'mcq', section:'Section VIII: Applied Scenarios',
+    q:"A mobile banking app sends you a push notification saying 'You tend to overspend on dining out at month-end. Want to set a dining budget?' This notification was sent at month-end. Which tool types does this COMBINE?",
+    opts:["Tunneling and conditioning","Tailoring and suggestion","Reduction and surveillance","Self-monitoring and reduction"],
+    ans:1, exp:"The app uses tailoring (information specific to your spending patterns) AND suggestion (intervening at the opportune moment — month-end, when overspending tends to occur). This is a common real-world combination."
+  },
+  {
+    id:63, type:'mcq', section:'Section VIII: Applied Scenarios',
+    q:"eBay's seller rating system (buyers and sellers rate each other after transactions) motivates honest and courteous behavior. According to Fogg, this is an example of:",
+    opts:["Macrosuasion — eBay's primary goal is persuasion","Microsuasion — a small persuasive element embedded in the larger goal of enabling transactions","Surveillance technology","Tunneling technology"],
+    ans:1, exp:"eBay's primary goal is enabling buying/selling transactions, not persuasion. The rating system is a microsuasive element — a persuasive mechanism embedded within the larger product to achieve a specific behavioral goal (honesty)."
+  },
+  {
+    id:64, type:'mcq', section:'Section VIII: Applied Scenarios',
+    q:"A company wants to increase employee hand-washing rates. They install a screen near the sink that shows live data: '63% of people in this building washed their hands today.' When an employee passes, it shows their own rate vs. the building average. Which tools does this PRIMARILY use?",
+    opts:["Tunneling and reduction","Suggestion and social comparison (social dynamics)","Tailoring and conditioning","Reduction and medium"],
+    ans:1, exp:"This system uses suggestion (intervening at the opportune moment — when near the sink) and social dynamics (social comparison/normative influence — comparing personal behavior to group norms). This is also related to self-monitoring."
+  },
+  {
+    id:65, type:'mcq', section:'Section VIII: Applied Scenarios',
+    q:"You are building a persuasive technology for senior citizens to exercise more. Based on Fogg's similarity principle, which design approach would MOST effectively build persuasive social presence?",
+    opts:["Use a young, energetic virtual coach with upbeat music","Use a virtual coach with a similar age, speaking style, and shared references to the target audience","Use the most advanced AI avatar technology available","Focus only on tool functions and avoid social cues"],
+    ans:1, exp:"The Similarity Principle states products are more persuasive when users can identify with them. For seniors, a virtual coach with similar age, familiar speech patterns, and relevant cultural references would be more persuasive than a young, high-energy avatar."
+  },
+  {
+    id:66, type:'mcq', section:'Section VIII: Applied Scenarios',
+    q:"A new social networking app aims to build credibility quickly. Which combination of strategies is MOST effective according to Fogg's credibility research?",
+    opts:["Use pop-up ads and anonymous content to appear neutral","Display professional design, offer quick customer service responses, and link to credible outside sources","Use impressive claims and celebrity endorsements without verification","Focus solely on earning credibility through many years of operation"],
+    ans:1, exp:"Stanford research confirms: professional design boosts surface credibility, quick customer service responses build expertise credibility, and linking to outside sources increases trustworthiness. These work synergistically."
+  },
+  {
+    id:67, type:'ms', section:'Section VIII: Applied Scenarios',
+    q:"A health app wants to maximize its persuasive power. Based on Fogg's six computer advantages over human persuaders, which features should the app include? (Select ALL valid applications)",
+    opts:["Daily reminders that persist until acknowledged (Persistence)","An anonymous mode for sensitive health questions (Anonymity)","Personalized data drawn from thousands of similar users (Data management)","Visual charts, audio feedback, and interactive scenarios (Multiple modalities)","A version that can work on a smartwatch during workouts (Ubiquity)","A feature that deletes data after 24 hours to reduce scale"],
+    ans:[0,1,2,3,4], exp:"All except deleting data (which REDUCES scale) map directly to Fogg's six advantages: persistence, anonymity, massive data processing, multiple modalities, scalability, and ubiquity. These are the core arguments for why persuasive technology can outperform human coaches."
+  },
+  {
+    id:68, type:'mcq', section:'Section VIII: Applied Scenarios',
+    q:"A web designer removes all pop-up ads, adds author credentials to every article, provides a physical office address, and makes the site easy to navigate. Based on Stanford credibility research, the MOST impactful of these changes on credibility would be:",
+    opts:["Adding author credentials","Removing pop-up ads","Adding the physical address","Making navigation easier"],
+    ans:1, exp:"Stanford studies found that making it hard to distinguish ads from content was the single biggest credibility reducer (−2.1). Removing pop-up ads directly addresses this. While all changes are positive, removing the biggest negative driver has the highest impact."
+  },
+  {
+    id:69, type:'fill', section:'Section VIII: Applied Scenarios',
+    q:"In Fogg's framework, the ________ triad provides designers with a framework to identify whether a product persuades as a tool, medium, or social actor — or some combination of all three.",
+    ans:["functional","functional triad"], exp:"The functional triad is Fogg's core conceptual framework for categorizing how computers persuade. Understanding which role(s) a product plays helps researchers analyze and designers create more effective persuasive technologies."
+  },
+  {
+    id:70, type:'mcq', section:'Section VIII: Applied Scenarios',
+    q:"Quitnet.com asks users to publicly announce their quit date to the community. According to Fogg, this microsuasion technique works because:",
+    opts:["Anonymity helps users avoid peer pressure","Public commitment creates a sense of consistency and social accountability","The website's professional design boosts surface credibility","Health information is always more persuasive when shared publicly"],
+    ans:1, exp:"Public commitment is a microsuasion strategy based on the human tendency toward consistency — people follow through on commitments they have made publicly. Quitnet uses this to motivate users to maintain their quit-smoking goals."
+  }
+];
+
+// ── STATE ──
+let current = 0;
+let answers = new Array(QUESTIONS.length).fill(null);
+let submitted = new Array(QUESTIONS.length).fill(false);
+let score = 0;
+let timerInterval = null;
+let secondsLeft = 90 * 60;
+
+function startExam() {
+  document.getElementById('intro-screen').style.display = 'none';
+  document.getElementById('exam-screen').style.display = 'block';
+  buildNavDots();
+  renderQuestion();
+  startTimer();
+}
+
+function startTimer() {
+  timerInterval = setInterval(() => {
+    secondsLeft--;
+    if (secondsLeft <= 0) { clearInterval(timerInterval); finishExam(); return; }
+    const m = Math.floor(secondsLeft / 60).toString().padStart(2,'0');
+    const s = (secondsLeft % 60).toString().padStart(2,'0');
+    const el = document.getElementById('timer-display');
+    el.textContent = `${m}:${s}`;
+    if (secondsLeft < 300) el.style.color = 'var(--danger)';
+  }, 1000);
+}
+
+function buildNavDots() {
+  const c = document.getElementById('nav-dots');
+  c.innerHTML = '';
+  QUESTIONS.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'nav-dot' + (i === current ? ' current' : '');
+    d.title = `Q${i+1}`;
+    d.onclick = () => { current = i; renderQuestion(); };
+    c.appendChild(d);
+  });
+}
+
+function updateNavDots() {
+  const dots = document.querySelectorAll('.nav-dot');
+  dots.forEach((d, i) => {
+    d.className = 'nav-dot';
+    if (i === current) d.classList.add('current');
+    else if (submitted[i]) {
+      const q = QUESTIONS[i]; const a = answers[i];
+      const correct = isCorrect(q, a);
+      d.classList.add(correct ? 'correct-dot' : 'wrong-dot');
+    } else if (answers[i] !== null) {
+      d.classList.add('answered');
+    }
+  });
+}
+
+function isCorrect(q, a) {
+  if (a === null) return false;
+  if (q.type === 'mcq') return a === q.ans;
+  if (q.type === 'ms') {
+    if (!Array.isArray(a)) return false;
+    const s = [...a].sort(); const t = [...q.ans].sort();
+    return s.length === t.length && s.every((v,i) => v === t[i]);
+  }
+  if (q.type === 'fill') {
+    return q.ans.some(ac => a.trim().toLowerCase().includes(ac.toLowerCase()));
+  }
+  return false;
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[current];
+  const container = document.getElementById('question-container');
+  container.innerHTML = '';
+
+  // Section header
+  if (current === 0 || QUESTIONS[current].section !== QUESTIONS[current-1].section) {
+    const sh = document.createElement('div');
+    sh.className = 'section-header';
+    sh.innerHTML = `<div class="section-line"></div><h2>${q.section}</h2><div class="section-line"></div>`;
+    container.appendChild(sh);
+  }
+
+  const card = document.createElement('div');
+  card.className = 'q-card';
+
+  const typeBadge = q.type === 'mcq' ? `<span class="q-badge badge-mcq">Single Choice</span>` :
+                    q.type === 'ms'  ? `<span class="q-badge badge-ms">Multiple Select</span>` :
+                                       `<span class="q-badge badge-fill">Fill in Blank</span>`;
+
+  card.innerHTML = `
+    <div class="q-meta">
+      <span class="q-number">Question ${current+1} of ${QUESTIONS.length}</span>
+      ${typeBadge}
+    </div>
+    <div class="q-text">${q.q}</div>
+    <div id="answer-area"></div>
+    <div class="feedback" id="feedback-area"></div>
+    <div class="q-actions">
+      ${current > 0 ? `<button class="btn btn-prev" onclick="prevQ()">← Previous</button>` : ''}
+      <button class="btn btn-submit" id="submit-btn" onclick="submitAnswer()">Submit Answer</button>
+      ${current < QUESTIONS.length - 1 ? `<button class="btn btn-next" id="next-btn" onclick="nextQ()" ${!submitted[current] ? 'style="display:none"' : ''}>Next →</button>` : `<button class="btn btn-next" id="next-btn" onclick="finishExam()" ${!submitted[current] ? 'style="display:none"' : ''}>Finish Exam</button>`}
+    </div>
+  `;
+  container.appendChild(card);
+
+  const area = card.querySelector('#answer-area');
+  if (q.type === 'mcq') renderMCQ(q, area);
+  else if (q.type === 'ms') renderMS(q, area);
+  else renderFill(q, area);
+
+  if (submitted[current]) restoreSubmitted(q, card);
+
+  document.getElementById('q-count-display').textContent = `${current+1}/70`;
+  document.getElementById('progress-fill').style.width = `${((current+1)/70)*100}%`;
+  document.getElementById('submit-btn').disabled = (answers[current] === null);
+  updateNavDots();
+  container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderMCQ(q, area) {
+  const div = document.createElement('div');
+  div.className = 'options';
+  const keys = ['A','B','C','D','E'];
+  q.opts.forEach((opt, i) => {
+    const o = document.createElement('div');
+    o.className = 'option' + (answers[current] === i ? ' selected' : '');
+    o.innerHTML = `<span class="opt-key">${keys[i]}</span><span class="opt-text">${opt}</span>`;
+    o.onclick = () => {
+      if (submitted[current]) return;
+      answers[current] = i;
+      div.querySelectorAll('.option').forEach((el,j) => {
+        el.classList.toggle('selected', j === i);
+      });
+      document.getElementById('submit-btn').disabled = false;
+    };
+    div.appendChild(o);
+  });
+  area.appendChild(div);
+}
+
+function renderMS(q, area) {
+  const hint = document.createElement('p');
+  hint.className = 'ms-hint';
+  hint.textContent = 'Select all that apply — then click Submit Answer.';
+  area.appendChild(hint);
+  const div = document.createElement('div');
+  div.className = 'options';
+  const sel = answers[current] || [];
+  q.opts.forEach((opt, i) => {
+    const o = document.createElement('div');
+    o.className = 'checkbox-opt' + (sel.includes(i) ? ' checked' : '');
+    o.innerHTML = `<div class="cb-box">${sel.includes(i) ? '✓' : ''}</div><span class="opt-text">${opt}</span>`;
+    o.onclick = () => {
+      if (submitted[current]) return;
+      let cur = answers[current] || [];
+      if (cur.includes(i)) cur = cur.filter(x => x !== i);
+      else cur = [...cur, i];
+      answers[current] = cur.length ? cur : null;
+      div.querySelectorAll('.checkbox-opt').forEach((el, j) => {
+        const isIn = (answers[current]||[]).includes(j);
+        el.classList.toggle('checked', isIn);
+        el.querySelector('.cb-box').textContent = isIn ? '✓' : '';
+      });
+      document.getElementById('submit-btn').disabled = !answers[current];
+    };
+    div.appendChild(o);
+  });
+  area.appendChild(div);
+}
+
+function renderFill(q, area) {
+  const wrap = document.createElement('div');
+  wrap.className = 'fill-wrap';
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.className = 'fill-input';
+  inp.placeholder = 'Type your answer here…';
+  inp.value = answers[current] || '';
+  inp.oninput = () => {
+    answers[current] = inp.value || null;
+    document.getElementById('submit-btn').disabled = !inp.value.trim();
+  };
+  inp.onkeydown = (e) => { if (e.key === 'Enter' && !submitted[current] && answers[current]) submitAnswer(); };
+  wrap.appendChild(inp);
+  area.appendChild(wrap);
+}
+
+function submitAnswer() {
+  if (submitted[current]) return;
+  const q = QUESTIONS[current];
+  submitted[current] = true;
+
+  const correct = isCorrect(q, answers[current]);
+  if (correct) score++;
+  document.getElementById('score-display').textContent = score;
+
+  const fb = document.getElementById('feedback-area');
+  fb.textContent = (correct ? '✓ Correct! ' : '✗ Incorrect. ') + q.exp;
+  fb.className = 'feedback show ' + (correct ? 'correct-fb' : 'wrong-fb');
+
+  document.getElementById('submit-btn').disabled = true;
+  const nextBtn = document.getElementById('next-btn');
+  if (nextBtn) nextBtn.style.display = '';
+
+  // Style the answer options
+  if (q.type === 'mcq') {
+    document.querySelectorAll('.option').forEach((el, i) => {
+      el.classList.add('disabled');
+      if (i === q.ans) el.classList.add('correct');
+      else if (i === answers[current] && answers[current] !== q.ans) el.classList.add('wrong');
+    });
+  } else if (q.type === 'ms') {
+    document.querySelectorAll('.checkbox-opt').forEach((el, i) => {
+      el.classList.add('disabled');
+      const userSelected = (answers[current]||[]).includes(i);
+      const shouldSelect = q.ans.includes(i);
+      if (userSelected && shouldSelect) el.classList.add('correct');
+      else if (userSelected && !shouldSelect) el.classList.add('wrong');
+      else if (!userSelected && shouldSelect) el.classList.add('missed');
+    });
+  } else {
+    const inp = document.querySelector('.fill-input');
+    if (inp) inp.classList.add(correct ? 'correct-fill' : 'wrong-fill');
+  }
+
+  updateNavDots();
+}
+
+function restoreSubmitted(q, card) {
+  document.getElementById('submit-btn').disabled = true;
+  const nextBtn = document.getElementById('next-btn');
+  if (nextBtn) nextBtn.style.display = '';
+  const correct = isCorrect(q, answers[current]);
+  const fb = document.getElementById('feedback-area');
+  fb.textContent = (correct ? '✓ Correct! ' : '✗ Incorrect. ') + q.exp;
+  fb.className = 'feedback show ' + (correct ? 'correct-fb' : 'wrong-fb');
+
+  if (q.type === 'mcq') {
+    card.querySelectorAll('.option').forEach((el, i) => {
+      el.classList.add('disabled');
+      if (i === q.ans) el.classList.add('correct');
+      else if (i === answers[current] && answers[current] !== q.ans) el.classList.add('wrong');
+    });
+  } else if (q.type === 'ms') {
+    card.querySelectorAll('.checkbox-opt').forEach((el, i) => {
+      el.classList.add('disabled');
+      const userSelected = (answers[current]||[]).includes(i);
+      const shouldSelect = q.ans.includes(i);
+      if (userSelected && shouldSelect) el.classList.add('correct');
+      else if (userSelected && !shouldSelect) el.classList.add('wrong');
+      else if (!userSelected && shouldSelect) el.classList.add('missed');
+    });
+  } else {
+    const inp = card.querySelector('.fill-input');
+    if (inp) inp.classList.add(correct ? 'correct-fill' : 'wrong-fill');
+  }
+}
+
+function nextQ() {
+  if (current < QUESTIONS.length - 1) { current++; renderQuestion(); }
+}
+function prevQ() {
+  if (current > 0) { current--; renderQuestion(); }
+}
+
+function finishExam() {
+  clearInterval(timerInterval);
+  document.getElementById('exam-screen').style.display = 'none';
+  const results = document.getElementById('results-screen');
+  results.style.display = 'block';
+
+  const total = QUESTIONS.length;
+  const correct = score;
+  const wrong = submitted.filter((s,i) => s && !isCorrect(QUESTIONS[i], answers[i])).length;
+  const skipped = total - submitted.filter(Boolean).length;
+  const pct = Math.round((correct / total) * 100);
+
+  document.getElementById('final-pct').textContent = `${pct}%`;
+  document.getElementById('res-correct').textContent = correct;
+  document.getElementById('res-wrong').textContent = wrong;
+  document.getElementById('res-skipped').textContent = skipped;
+
+  let grade = 'F — Fail';
+  let color = 'var(--danger)';
+  if (pct >= 90) { grade = 'A — Distinction'; color = 'var(--accent3)'; }
+  else if (pct >= 80) { grade = 'B — Credit'; color = 'var(--accent2)'; }
+  else if (pct >= 70) { grade = 'C — Pass'; color = 'var(--accent)'; }
+  else if (pct >= 60) { grade = 'D — Marginal'; color = '#e8a05a'; }
+
+  const gradeEl = document.getElementById('final-grade');
+  gradeEl.textContent = grade;
+  gradeEl.style.color = color;
+}
+
+function restartExam() {
+  current = 0;
+  answers = new Array(QUESTIONS.length).fill(null);
+  submitted = new Array(QUESTIONS.length).fill(false);
+  score = 0;
+  secondsLeft = 90 * 60;
+  clearInterval(timerInterval);
+  document.getElementById('results-screen').style.display = 'none';
+  document.getElementById('timer-display').style.color = 'var(--accent2)';
+  document.getElementById('score-display').textContent = '0';
+  document.getElementById('exam-screen').style.display = 'block';
+  buildNavDots();
+  renderQuestion();
+  startTimer();
+}
+</script>
+</body>
+</html>
