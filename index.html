@@ -117,10 +117,6 @@
     }
 
     function gradeQuiz() {
-      if (submitBtn.disabled) {
-        return;
-      }
-
       let score = 0;
       questions.forEach((q, i) => {
         const selected = document.querySelector(`input[name="q${i}"]:checked`);
