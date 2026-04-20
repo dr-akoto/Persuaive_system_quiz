@@ -87,22 +87,40 @@
     const result = document.getElementById("result");
 
     function renderQuiz() {
-      quizContainer.innerHTML = questions.map((q, i) => `
-        <section>
-          <div class="question">${i + 1}. ${q.text}</div>
-          <div class="answers">
-            ${q.options.map((opt, j) => `
-              <label>
-                <input type="radio" name="q${i}" value="${j}" />
-                ${opt}
-              </label>
-            `).join("")}
-          </div>
-        </section>
-      `).join("");
+      quizContainer.textContent = "";
+
+      questions.forEach((q, i) => {
+        const section = document.createElement("section");
+        const question = document.createElement("div");
+        question.className = "question";
+        question.textContent = `${i + 1}. ${q.text}`;
+
+        const answers = document.createElement("div");
+        answers.className = "answers";
+
+        q.options.forEach((opt, j) => {
+          const label = document.createElement("label");
+          const input = document.createElement("input");
+          input.type = "radio";
+          input.name = `q${i}`;
+          input.value = String(j);
+
+          label.appendChild(input);
+          label.append(` ${opt}`);
+          answers.appendChild(label);
+        });
+
+        section.appendChild(question);
+        section.appendChild(answers);
+        quizContainer.appendChild(section);
+      });
     }
 
     function gradeQuiz() {
+      if (submitBtn.disabled) {
+        return;
+      }
+
       let score = 0;
       questions.forEach((q, i) => {
         const selected = document.querySelector(`input[name="q${i}"]:checked`);
@@ -113,6 +131,7 @@
 
       result.hidden = false;
       result.textContent = `You scored ${score} out of ${questions.length}.`;
+      submitBtn.disabled = true;
     }
 
     submitBtn.addEventListener("click", gradeQuiz);
