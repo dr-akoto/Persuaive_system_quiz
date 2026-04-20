@@ -1,7 +1,7 @@
-# Persuaive_system_quiz
+# Persuasive System Quiz
 
 An interactive quiz interface for a persuasive systems course.
 
 ## Run
 
-Open `/home/runner/work/Persuaive_system_quiz/Persuaive_system_quiz/index.html` in a browser.
+From the project root, open `index.html` in a browser.
